@@ -4,7 +4,7 @@ from helpers.fileHelper import FileHelper
 from models.Synonym import Synonym
 
 class Steganograph:
-    END_OF_SECRET = [0, 0, 0, 0, 0, 0, 0, 0] # ASCII charachter NULL
+    __END_OF_SECRET = [1, 0, 0, 0, 0, 0, 0, 0] # ASCII charachter only use 7 bits, so the 8th bit can be used to mark the end
     synonyms: list[Synonym]
     isInitialized: bool
     def __init__(self, pathToConfig: str) -> None:
@@ -15,28 +15,35 @@ class Steganograph:
     
     def write(self, textToWriteTo: str, hiddenText: str) -> str:
         textToWriteToIndex = 0
-        word = ""
+        currentWord = ""
         generatedText = ""
-        bits = BitHelper.string_to_bit_array(hiddenText).__add__(self.END_OF_SECRET)
+        bits = BitHelper.string_to_bit_array(hiddenText).__add__(self.__END_OF_SECRET)
         currentBitIndex = 0
 
         while textToWriteToIndex < len(textToWriteTo):
             char = textToWriteTo[textToWriteToIndex]
             textToWriteToIndex += 1
 
+            # read until non alphabetic character, which means word is complete
             if (char.isalpha()):
-                word += char
+                currentWord += char
                 continue
 
+            # if no word exists, continue
+            if (len(currentWord) == 0):
+                continue
+
+            # find match for current word
             match: Synonym | None = None
             for synonym in self.synonyms:
-                if (word == synonym.word or word == synonym.synonym):
+                if (currentWord == synonym.word or currentWord == synonym.synonym):
                     match = synonym
                     break  
 
             if (match is None):
-                generatedText += word
+                generatedText += currentWord
             else:
+                # if match is found, replace it with synonym depending on currentBit
                 currentBit = bits[currentBitIndex]
                 currentBitIndex += 1
                 
@@ -45,7 +52,7 @@ class Steganograph:
                 else:
                     generatedText += match.synonym
             
-            word = ""
+            currentWord = ""
             generatedText += char
             # if the secrettext is completed, the text as whole is returned 
             if (currentBitIndex == len(bits)):
@@ -55,7 +62,7 @@ class Steganograph:
 
     def read(self, textToReadFrom: str) -> str:
         textToReadFromIndex = 0
-        word = ""
+        currentWord = ""
         secretTextByte: list[int] = []
         secretText = ""
 
@@ -63,29 +70,38 @@ class Steganograph:
             char = textToReadFrom[textToReadFromIndex]
             textToReadFromIndex += 1
 
+            # read until non alphabetic character, which means word is complete
             if (char.isalpha()):
-                word += char
+                currentWord += char
                 continue
 
+            # if no word exists, continue
+            if (len(currentWord) == 0):
+                continue
+
+            # find match for current word
             match: Synonym | None = None
             for synonym in self.synonyms:
-                if (word == synonym.word or word == synonym.synonym):
+                if (currentWord == synonym.word or currentWord == synonym.synonym):
                     match = synonym
                     break
             
             if (match is not None):
-                if (word == synonym.word):
+                # if match is found, translate match to secret coding and append to scretTextByte
+                if (currentWord == synonym.word):
                     secretTextByte.append(0)
                 else:
                     secretTextByte.append(1)
                 
+                # once secretTextByte contains 8 bits, convert it
                 if (len(secretTextByte) == 8):
-                    if secretTextByte == self.END_OF_SECRET:
+                    # if secretTextByte equals END_OF_SECRET constant stop reading and return secretText
+                    if secretTextByte == self.__END_OF_SECRET:
                         return secretText
                     else:
                         secretText += BitHelper.bits_to_char(secretTextByte)
                     secretTextByte = []
-            word = ""
+            currentWord = ""
             
         raise ValueError("No secret was found in the text")
 

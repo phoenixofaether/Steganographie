@@ -1,4 +1,3 @@
-from typing import Any
 from helpers.bitHelper import BitHelper
 from helpers.fileHelper import FileHelper
 from models.Synonym import Synonym
@@ -175,12 +174,12 @@ class Steganograph:
             
         raise ValueError("No secret was found in the text.")
 
-    def __validateAndApplyConfig(self, jsonData: Any) -> None:
+    def __validateAndApplyConfig(self, jsonData: dict | list) -> None:
         """
         Validates and applies the configuration for synonyms from a given JSON data.
 
         Args:
-            jsonData (Any): The JSON data containing the configuration for the synonyms.
+            jsonData (dict | list): The JSON data containing the configuration for the synonyms.
 
         Raises:
             ValueError: If the configuration file format or synonym structure is invalid.

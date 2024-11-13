@@ -1,7 +1,6 @@
 import json
 import tkinter as tk
 from tkinter import filedialog
-from typing import Any
 
 class FileHelper:
     """
@@ -15,7 +14,7 @@ class FileHelper:
         read_file(path: str) -> str:
             Reads the contents of a file at the given path and returns it as a string.
 
-        read_json_file(path: str) -> Any:
+        read_json_file(path: str) -> dict | list:
             Reads a JSON file from the given path and returns the parsed JSON data.
 
         write_file(path: str, content: str) -> None:
@@ -66,7 +65,7 @@ class FileHelper:
         return file.read()
 
     @staticmethod
-    def read_json_file(path: str) -> Any:
+    def read_json_file(path: str) -> dict | list:
         """
         Reads the contents of a JSON file at the specified path and returns the parsed data.
 

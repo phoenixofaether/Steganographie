@@ -8,7 +8,6 @@ class Steganograph:
     and bit-level encoding.
 
     Attributes:
-        LENGTH_OF_BYTE: A constant defining the number of bits that result in a byte
         END_OF_SECRET (list[int]): A constant marking the end of the hidden message in a bit array.
         synonyms (list[Synonym]): A list of `Synonym` objects used for encoding and decoding.
         isInitialized (bool): A flag indicating if the configuration has been successfully loaded.
@@ -26,8 +25,7 @@ class Steganograph:
         __validateAndApplyConfig(jsonData: Any) -> None:
             Validates and applies the configuration for the synonyms from a JSON object.
     """
-    LENGTH_OF_BYTE: int = 8
-    END_OF_SECRET = [1, 0, 0, 0, 0, 0, 0, 0]  # ASCII characters use only 7 bits, so the 8th bit marks the end
+    END_OF_SECRET = [1, 1, 1, 1, 1, 1, 1, 1]  # extremely rare unicode character
     synonyms: list[Synonym]
     isInitialized: bool
 
@@ -132,8 +130,7 @@ class Steganograph:
         """
         textToReadFromIndex = 0
         currentWord = ""
-        secretTextByte: list[int] = []
-        secretText = ""
+        secretTextBits: list[int] = []
 
         while textToReadFromIndex < len(textToReadFrom):
             char = textToReadFrom[textToReadFromIndex]
@@ -156,20 +153,16 @@ class Steganograph:
                     break
             
             if match is not None:
-                # if match is found, translate match to secret coding and append to secretTextByte
+                # if match is found, translate match to secret coding and append to secretTextBits
                 if currentWord == synonym.word:
-                    secretTextByte.append(0)
+                    secretTextBits.append(0)
                 else:
-                    secretTextByte.append(1)
+                    secretTextBits.append(1)
                 
-                # once secretTextByte contains 8 bits, convert it
-                if len(secretTextByte) == self.LENGTH_OF_BYTE:
-                    # if secretTextByte equals END_OF_SECRET constant, stop reading and return secretText
-                    if secretTextByte == self.END_OF_SECRET:
-                        return secretText
-                    else:
-                        secretText += BitHelper.bits_to_char(secretTextByte)
-                    secretTextByte = []
+                # if the newest bits equal the END_OF_SECRET, convert and return the secret
+                if len(secretTextBits) % 8:
+                    if secretTextBits[-len(self.END_OF_SECRET)] == self.END_OF_SECRET:
+                        return BitHelper.bits_to_char(secretTextBits[:-len(self.END_OF_SECRET)])
             currentWord = ""
             
         raise ValueError("No secret was found in the text.")

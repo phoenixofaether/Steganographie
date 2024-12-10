@@ -24,8 +24,7 @@ class TestBitHelper(unittest.TestCase):
 
     def test_bits_to_char_extended_unicode(self):
         # Test converting bits back to an extended Unicode character (e.g., ö)
-        bits = [1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1,
-                1, 0, 1, 1, 0]  # Binary for UTF-8 'ö'
+        bits = [1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0]  # Binary for UTF-8 'ö'
         result = BitHelper.bits_to_char(bits)
         self.assertEqual(result, 'ö')
 

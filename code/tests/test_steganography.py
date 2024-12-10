@@ -89,11 +89,12 @@ class TestSteganograph(unittest.TestCase):
         text_with_hidden_message = "I am happy today but also unhappy and joyful. I would be happy if the test runs, unhappy if it doesn't and joyful if the whole project runs."
 
         with patch('helpers.bitHelper.BitHelper.bits_to_char') as mock_bits_to_char:
-            mock_bits_to_char.return_value = "1"  
-            expected_calls = [call(list([0, 1])), call(list([1, 0]))]
+            mock_bits_to_char.return_value = "11"  
+            expected_calls = [call(list([0, 1, 1, 0]))]
 
             # Act
             result = steganograph.read(text_with_hidden_message)
+            print(result)
 
         # Assert
         self.assertEqual(result, "11")

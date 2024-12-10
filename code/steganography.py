@@ -8,6 +8,7 @@ class Steganograph:
     and bit-level encoding.
 
     Attributes:
+        LENGTH-OF-BYTE: A constand defining the number of bits that result in a byte
         END_OF_SECRET (list[int]): A constant marking the end of the hidden message in a bit array.
         synonyms (list[Synonym]): A list of `Synonym` objects used for encoding and decoding.
         isInitialized (bool): A flag indicating if the configuration has been successfully loaded.
@@ -25,6 +26,7 @@ class Steganograph:
         __validateAndApplyConfig(jsonData: Any) -> None:
             Validates and applies the configuration for the synonyms from a JSON object.
     """
+    LENGTH_OF_BYTE: int = 8
     END_OF_SECRET = [1, 1, 1, 1, 1, 1, 1, 1]  # extremely rare unicode character
     synonyms: list[Synonym]
     isInitialized: bool
@@ -160,8 +162,8 @@ class Steganograph:
                     secretTextBits.append(1)
                 
                 # if the newest bits equal the END_OF_SECRET, convert and return the secret
-                if len(secretTextBits) % 8:
-                    if secretTextBits[-len(self.END_OF_SECRET)] == self.END_OF_SECRET:
+                if len(secretTextBits) % self.LENGTH_OF_BYTE == 0 and len(secretTextBits) > len(self.END_OF_SECRET):
+                    if secretTextBits[-len(self.END_OF_SECRET):] == self.END_OF_SECRET:
                         return BitHelper.bits_to_char(secretTextBits[:-len(self.END_OF_SECRET)])
             currentWord = ""
             
